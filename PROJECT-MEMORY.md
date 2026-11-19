@@ -2,7 +2,11 @@
 
 ## Decisions (agreed)
 - Source of truth: D:\Projects\2008\Lock-To-Sync-V1.1.0.0 Premium (never edited; this repo is a replica).
-- Target: .NET 10 WinForms + Krypton.Toolkit (Krypton Suite, NuGet). Goal: premium look, GitHub-ready, installable.
+- Target: dual build net48 + net10.0(-windows) from one SDK-style source; WinForms + Krypton.Toolkit 110.26.11.306 (BSD-3, NuGet).
+  net48 is the main download (preinstalled on Win10 1903+/11, no runtime prompt); net10 optional. Next version: 4.0.0.
+  Keep a copy of the Krypton package + packages.lock.json in the repo so the build can never be lost again.
+  The old Krypton 3.0.8 DLL is inside the old Setup1\Debug\LockToSync.msi (recoverable via msiexec /a).
+  Goal: premium look, GitHub-ready, installable. Avoid C# features missing on net48 (ranges, etc.) in shared code.
   Krypton is WinForms-only; WPF libraries (MahApps, WPF-UI) look different. A WPF version may come later.
 - Name: "Directory Lock To Sync"; drop "Premium" (the plain WinForms source is lost). GitHub repo (empty, created by the author): https://github.com/deadmann/lock2sync - the repo keeps the short name lock2sync, the product name stays "Directory Lock To Sync".
 - Never use "Tak System" (it never existed as a company). Publisher/author: Hassan Faghihi.
@@ -33,6 +37,7 @@
 6. Installer: MSIX or WiX/Inno Setup instead of the 2008 vdproj + WinInstaller 3.1 prerequisites; optional winget manifest.
 7. GitHub: repo, README with screenshots, LICENSE, GitHub Actions build+release, versioned tags.
 8. Optional WPF version later.
-9. Tests for lock/unlock path logic (current split by '.' breaks on dotted folder names).
+9. DONE in step 1: lock/unlock logic is in DirectoryLockToSync.Core (FolderLocker) with tests on net48 + net10.0.
+   (The original Split('.') logic is awkward but does not break on dotted folder names; earlier note was wrong.)
 10. New signing: the old temporary .pfx was dropped; use a fresh certificate if signing is wanted.
 11. Check the V2.0.0.4 / V2.1.0.0 zips for source and dates; if present, add per-version commits at their true dates.
