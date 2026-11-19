@@ -29,8 +29,17 @@
   "more/less info" buttons, colour light, Path drop menu, Crimson status text). RULE: never redesign the look; port it 1:1,
   only fix real defects. Only changes: title without "V1 Premium", saved slots store the unlocked name (so the light stays
   green after locking), failure reasons in a tooltip.
-  Still to port in #3: KryptonSetting, KryptonAbout, KryptonInput, Login, skin image/transparency/zoom, Krypton themes
-  (old names Office2007Blue etc. map to new PaletteMode values).
+  #3 progress: Setting window (Skin + Security tabs), Confirm (Input) window, themes (all 7 map 1:1 to Krypton palettes) and
+  the background picture are done. Still to port: KryptonAbout (441x277, logo from KryptonAbout.resx) and the start-up Login
+  window (210x121 borderless; Cancel exits the app).
+  Why the 2008 picture failed on Win 11: it was copied to Directory.GetCurrentDirectory() (Program Files is read-only, and
+  the folder moves after a file dialog) and loaded with new Bitmap(path) (locks the file). Now: copy to %AppData% via
+  SkinImageStore, load via memory (SkinImageLoader), draw it as the main panel's own background (SkinRenderer), so a
+  transparent info box shows it. 2008 bug fixed: Setting saved KeepLastAddress from the Security Question checkbox.
+  Login: username case-insensitive, password exact, stored as PBKDF2 hash (the 2008 one was plain text, case-insensitive).
+  Look notes: Krypton draws the title-bar height from the Windows caption height (cannot be shrunk by a setting); KryptonForm.
+  UseDropShadow is obsolete (Win 7/8 only; Win 10/11 shadow is drawn by Windows); all windows derive from ChromeForm
+  (TitleStyle Classic). Path menu uses ImageColumn=false (no empty icon strip).
 - AssemblyInfo.cs still says AssemblyCompany "Tak-System (None)" -> replace with the author's name when porting.
 
 ## Dating evidence

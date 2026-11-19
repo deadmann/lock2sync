@@ -13,7 +13,7 @@ namespace DirectoryLockToSync;
 /// on the right, Open Folder across, and the Status / Address box that can grow line by line.
 /// All folder logic lives in <see cref="FolderSession"/> and <see cref="AppSettings"/> (tested in Core).
 /// </summary>
-public sealed class MainForm : KryptonForm
+public sealed class MainForm : ChromeForm
 {
     // Layout numbers of the original form, in 96-dpi pixels.
     private const int FormClientWidth = 326;
@@ -23,6 +23,7 @@ public sealed class MainForm : KryptonForm
 
     private readonly SettingsStore _store;
     private readonly AppSettings _settings;
+    private readonly SkinImageStore _skinStore;
     private readonly FolderSession _session = new FolderSession();
     private readonly KryptonManager _manager = new KryptonManager();
     private readonly ToolTip _toolTip = new ToolTip();
@@ -39,6 +40,10 @@ public sealed class MainForm : KryptonForm
     private readonly KryptonButton _saveSlotButton = NewButton("Save", 108, 74, 52, 9);
     private readonly KryptonButton _clearSlotButton = NewButton("Clear", 166, 74, 52, 10);
     private readonly Panel _light = new Panel();
+    private readonly KryptonPanel _panel = new KryptonPanel { Dock = DockStyle.Fill };
+    private Image? _skinImage;       // the background picture as loaded
+    private Bitmap? _skinRendered;   // the picture drawn for the current window size and picture mode
+    private SettingForm? _settingForm;
 
     private readonly KryptonGroup _infoGroup = new KryptonGroup();
     private readonly KryptonLabel _statusCaption = new KryptonLabel();
@@ -55,6 +60,7 @@ public sealed class MainForm : KryptonForm
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _settings = store.Load();
+        _skinStore = new SkinImageStore(Path.GetDirectoryName(Path.GetFullPath(store.FilePath))!);
 
         BuildUi();
         Load += (sender, e) => OnStart();
@@ -75,8 +81,8 @@ public sealed class MainForm : KryptonForm
     {
         SuspendLayout();
 
-        // The original look: Office 2007 Blue (the "Light-Blue" theme, which was the default).
-        _manager.GlobalPaletteMode = PaletteMode.Office2007Blue;
+        // The saved theme; the original default is Light-Blue (Office 2007 Blue).
+        ApplyTheme();
 
         AutoScaleDimensions = new SizeF(96F, 96F);
         AutoScaleMode = AutoScaleMode.Dpi;
@@ -124,17 +130,16 @@ public sealed class MainForm : KryptonForm
             _lessButton, _moreButton, _addressLabel, _statusLabel, _addressCaption, _statusCaption
         });
 
-        var panel = new KryptonPanel { Dock = DockStyle.Fill };
-        panel.Controls.AddRange(new Control[]
+        _panel.Controls.AddRange(new Control[]
         {
             _infoGroup, _clearSlotButton, _saveSlotButton, _loadSlotButton, _openButton, _pathButton,
             _unloadButton, _settingButton, _unlockButton, _browseButton, _lockButton, _aboutButton, _light
         });
-        Controls.Add(panel);
+        Controls.Add(_panel);
         ClientSize = new Size(FormClientWidth, FormClientHeight); // 96-dpi units; the form scales itself for other DPIs
 
         _aboutButton.Click += (sender, e) => NotPortedYet("About");
-        _settingButton.Click += (sender, e) => NotPortedYet("Setting");
+        _settingButton.Click += (sender, e) => OpenSettings();
         _browseButton.Click += (sender, e) => Browse();
         _lockButton.Click += (sender, e) => LockFolder();
         _unlockButton.Click += (sender, e) => UnlockFolder();
@@ -175,9 +180,102 @@ public sealed class MainForm : KryptonForm
         _infoGroup.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
     }
 
+    // ---------------------------------------------------------------- theme, skin and the Setting window
+
+    private void ApplyTheme() => _manager.GlobalPaletteMode = ThemeMapper.ToPaletteMode(_settings.Theme);
+
+    /// <summary>
+    /// Loads the background picture and shows it as the window's own background (the "cast on the form" of the 2008 version),
+    /// and applies the info-box transparency.
+    /// </summary>
+    private void ApplySkin()
+    {
+        var oldImage = _skinImage;
+        _skinImage = null;
+
+        var path = _skinStore.GetPath(_settings.SkinImageFile);
+        if (path != null)
+        {
+            try
+            {
+                _skinImage = SkinImageLoader.Load(path);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is OutOfMemoryException || ex is ArgumentException)
+            {
+                SetStatus("Can't show image in main form", ex.Message);
+            }
+        }
+
+        oldImage?.Dispose();
+        UpdateSkinBackground();
+
+        // "Transparent for Info Section": the info box lets the background show through.
+        if (_settings.TransparentInfo)
+        {
+            _infoGroup.StateCommon.Back.Color1 = Color.Transparent;
+            _infoGroup.StateCommon.Back.Color2 = Color.Transparent;
+            _infoGroup.Panel.StateCommon.Color1 = Color.Transparent;
+            _infoGroup.Panel.StateCommon.Color2 = Color.Transparent;
+        }
+        else
+        {
+            _infoGroup.StateCommon.Back.Color1 = Color.Empty;
+            _infoGroup.StateCommon.Back.Color2 = Color.Empty;
+            _infoGroup.Panel.StateCommon.Color1 = Color.Empty;
+            _infoGroup.Panel.StateCommon.Color2 = Color.Empty;
+        }
+
+        _infoGroup.Invalidate(true);
+    }
+
+    /// <summary>Draws the picture for the current window size and picture mode onto the panel behind all the buttons.</summary>
+    private void UpdateSkinBackground()
+    {
+        var old = _skinRendered;
+        _skinRendered = null;
+
+        if (_skinImage != null && _panel.ClientSize.Width > 0 && _panel.ClientSize.Height > 0)
+        {
+            _skinRendered = SkinRenderer.Render(_skinImage, _settings.SkinImageMode, _panel.ClientSize);
+            _panel.StateCommon.Image = _skinRendered;
+            _panel.StateCommon.ImageStyle = PaletteImageStyle.TopLeft;
+        }
+        else
+        {
+            _panel.StateCommon.Image = null;
+        }
+
+        old?.Dispose();
+        _panel.Invalidate();
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        if (_skinImage != null) UpdateSkinBackground(); // the window grows with the address lines
+    }
+
+    private void OpenSettings()
+    {
+        if (_settingForm != null && !_settingForm.IsDisposed)
+        {
+            _settingForm.Activate();
+            return;
+        }
+
+        _settingForm = new SettingForm(_settings, _store, _skinStore, _manager);
+        _settingForm.Applied += (sender, e) =>
+        {
+            ApplyTheme();
+            ApplySkin();
+        };
+        _settingForm.FormClosed += (sender, e) => _settingForm = null;
+        _settingForm.Show(this);
+    }
+
     private KryptonContextMenu BuildPathMenu()
     {
-        var items = new KryptonContextMenuItems();
+        var items = new KryptonContextMenuItems { ImageColumn = false }; // no empty icon strip on the left, like the 2008 menu
         for (var slot = 1; slot <= AppSettings.PathSlotCount; slot++)
         {
             var number = slot;
@@ -215,6 +313,7 @@ public sealed class MainForm : KryptonForm
     {
         _addressLines = 1;
         ApplyAddressLines();
+        ApplySkin();
         SetStatus("Nothing Loaded");
         if (_settings.KeepLastAddress)
         {

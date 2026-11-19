@@ -14,7 +14,10 @@ Being rewritten (2026). Progress is tracked in the [issues](https://github.com/d
 
 - `src/DirectoryLockToSync.Core`: the lock/unlock logic, typed settings and folder session, done and tested.
 - `src/DirectoryLockToSync`: the Krypton main window, in the original 2008 design (browse, lock, unlock, open, unload, 10 saved folders).
-  Settings, About, password login and themes are still to come (#3), then the installer and CI.
+  The Setting window (skin picture, themes, security) is done. The About window and the start-up password login are
+  still to come (#3), then the installer and CI.
+- The background picture is copied to `%AppData%\DirectoryLockToSync` (the 2008 version copied it next to the program,
+  which Windows no longer allows in Program Files, so it stopped working).
 - Settings are stored in `%AppData%\DirectoryLockToSync\settings.xml`; `DirectoryLockToSync.exe --settings <file>`
   uses another file instead.
 - The 2008-2010 source is not in the tree. It is kept in git history under the tag `legacy-2008-2010`
