@@ -18,6 +18,15 @@
 - Git history: root commit 2007-03-03 (README/HISTORY), source import 2008-11-22, then new work with real dates.
   Dates are backed by evidence (see HISTORY.md); do not rewrite them.
 
+## UI rule (from the author, 2026-11-19)
+- EVERY window is a real designer form: `X.cs` (behaviour only) + `X.Designer.cs` (InitializeComponent, all controls,
+  positions, anchors, events) + `X.resx` when it needs resources (icon). Never build a window's controls in code at runtime:
+  the author works in the Visual Studio / Rider designer and an empty designer is unacceptable.
+- Base the designer on the ORIGINAL 2008 designer file (control names like btnLock, DrpBtnPath, groupBox1 are kept); each form
+  has a public parameterless constructor so the designer can create it; the title style is the designer property
+  `TitleStyle = Classic`, not a base class. About and Login (still to port in #3) must follow this too.
+- A designer form is verified by the real-window scripts in the session scratchpad, but the author's IDE is the final check.
+
 ## Facts about the original
 - Lock = Directory.Move(path, path + ".{F5175861-2688-11D0-9C5E-00AA00A45957}"); unlock = rename back. Obfuscation, not security.
 - Forms: KryptonDLTS (main), KryptonSetting, KryptonInput, KryptonAbout, Login; plain twins: DLTS, Setting, Input, About.

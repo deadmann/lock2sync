@@ -8,15 +8,13 @@ using Krypton.Toolkit;
 namespace DirectoryLockToSync;
 
 /// <summary>
-/// The main window, laid out exactly like the 2008-2010 KryptonDLTS form (same positions, sizes and tab order):
-/// About / Browse / Setting on the left, the saved-folder light and Path menu in the middle, Lock / Unlock / Unload
-/// on the right, Open Folder across, and the Status / Address box that can grow line by line.
+/// The main window. The layout (positions, sizes, anchors, tab order) is in MainForm.Designer.cs, copied from the 2008
+/// KryptonDLTS designer, so it can be edited in the Visual Studio / Rider designer. This file has the behaviour only.
 /// All folder logic lives in <see cref="FolderSession"/> and <see cref="AppSettings"/> (tested in Core).
 /// </summary>
-public sealed class MainForm : ChromeForm
+public sealed partial class MainForm : KryptonForm
 {
-    // Layout numbers of the original form, in 96-dpi pixels.
-    private const int FormClientWidth = 326;
+    // Layout numbers of the original form, in 96-dpi pixels (used when the window grows with the address lines).
     private const int FormClientHeight = 208;
     private const int LineHeight = 13;
     private const int MaxLines = 10; // pressing "more" on line 10 starts again at 1, like the original
@@ -25,37 +23,20 @@ public sealed class MainForm : ChromeForm
     private readonly AppSettings _settings;
     private readonly SkinImageStore _skinStore;
     private readonly FolderSession _session = new FolderSession();
-    private readonly KryptonManager _manager = new KryptonManager();
     private readonly ToolTip _toolTip = new ToolTip();
 
-    private readonly KryptonButton _aboutButton = NewButton("&About", 12, 12, 90, 0);
-    private readonly KryptonButton _browseButton = NewButton("&Browse", 12, 43, 90, 1);
-    private readonly KryptonButton _settingButton = NewButton("&Setting", 12, 74, 90, 2);
-    private readonly KryptonButton _lockButton = NewButton("&Lock", 224, 12, 90, 3);
-    private readonly KryptonButton _unlockButton = NewButton("&Unlock", 224, 43, 90, 4);
-    private readonly KryptonButton _unloadButton = NewButton("U&nload", 224, 74, 90, 5);
-    private readonly KryptonButton _openButton = NewButton("&Open Folder", 12, 105, 302, 6);
-    private readonly KryptonDropButton _pathButton = new KryptonDropButton();
-    private readonly KryptonButton _loadSlotButton = NewButton("Load Location", 108, 43, 110, 8);
-    private readonly KryptonButton _saveSlotButton = NewButton("Save", 108, 74, 52, 9);
-    private readonly KryptonButton _clearSlotButton = NewButton("Clear", 166, 74, 52, 10);
-    private readonly Panel _light = new Panel();
-    private readonly KryptonPanel _panel = new KryptonPanel { Dock = DockStyle.Fill };
     private Image? _skinImage;       // the background picture as loaded
     private Bitmap? _skinRendered;   // the part of the picture behind the buttons
     private Bitmap? _frameRendered;  // the same picture for the whole window, so the frame around it shows it too
     private SettingForm? _settingForm;
 
-    private readonly KryptonGroup _infoGroup = new KryptonGroup();
-    private readonly KryptonLabel _statusCaption = new KryptonLabel();
-    private readonly KryptonLabel _addressCaption = new KryptonLabel();
-    private readonly Label _statusLabel = new Label();
-    private readonly Label _addressLabel = new Label();
-    private readonly KryptonButton _moreButton = NewButton("︾", 270, 22, 27, 4, 25);
-    private readonly KryptonButton _lessButton = NewButton("︽", 270, 48, 27, 5, 25);
-
     private int _addressLines = 1;
     private int _slot; // 0 = no path slot chosen yet
+
+    /// <summary>Used by the designer and by a normal start (settings in %AppData%).</summary>
+    public MainForm() : this(new SettingsStore(SettingsStore.DefaultFilePath))
+    {
+    }
 
     public MainForm(SettingsStore store)
     {
@@ -63,270 +44,13 @@ public sealed class MainForm : ChromeForm
         _settings = store.Load();
         _skinStore = new SkinImageStore(Path.GetDirectoryName(Path.GetFullPath(store.FilePath))!);
 
-        BuildUi();
-        Load += (sender, e) => OnStart();
-    }
-
-    private static KryptonButton NewButton(string text, int x, int y, int width, int tabIndex, int height = 25) =>
-        new KryptonButton
-        {
-            Text = text,
-            Location = new Point(x, y),
-            Size = new Size(width, height),
-            TabIndex = tabIndex
-        };
-
-    // ---------------------------------------------------------------- layout (same as the original designer)
-
-    private void BuildUi()
-    {
-        SuspendLayout();
-
-        // The saved theme; the original default is Light-Blue (Office 2007 Blue).
-        ApplyTheme();
-
-        AutoScaleDimensions = new SizeF(96F, 96F);
-        AutoScaleMode = AutoScaleMode.Dpi;
-        FormBorderStyle = FormBorderStyle.FixedSingle;
-        MaximizeBox = false;
-        StartPosition = FormStartPosition.CenterScreen;
-        Text = "Directory Lock To Sync";
-        try { Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch (Exception) { /* the default icon is fine */ }
-
-        _light.BackColor = Color.Black;
-        _light.BorderStyle = BorderStyle.Fixed3D;
-        _light.Location = new Point(108, 12);
-        _light.Size = new Size(11, 25);
-        _light.TabIndex = 18;
-
-        _pathButton.Text = "Choose Path";
-        _pathButton.Location = new Point(120, 12);
-        _pathButton.Size = new Size(98, 25);
-        _pathButton.TabIndex = 7;
-        _pathButton.KryptonContextMenu = BuildPathMenu();
-
-        _statusCaption.Text = "Status";
-        _statusCaption.Location = new Point(3, 5);
-        _statusCaption.Size = new Size(41, 19);
-        _addressCaption.Text = "Address";
-        _addressCaption.Location = new Point(3, 30);
-        _addressCaption.Size = new Size(50, 19);
-
-        _statusLabel.AutoSize = true;
-        _statusLabel.BackColor = Color.Transparent;
-        _statusLabel.ForeColor = Color.Crimson;
-        _statusLabel.Location = new Point(59, 8);
-        _addressLabel.AutoSize = false;
-        _addressLabel.BackColor = Color.Transparent;
-        _addressLabel.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
-        _addressLabel.ForeColor = Color.Crimson;
-        _addressLabel.Location = new Point(59, 32);
-        _addressLabel.Size = new Size(205, LineHeight);
-
-        _infoGroup.Location = new Point(12, 137);
-        _infoGroup.Size = new Size(302, 65);
-        _infoGroup.TabIndex = 21;
-        _infoGroup.Panel.Controls.AddRange(new Control[]
-        {
-            _lessButton, _moreButton, _addressLabel, _statusLabel, _addressCaption, _statusCaption
-        });
-
-        _panel.Controls.AddRange(new Control[]
-        {
-            _infoGroup, _clearSlotButton, _saveSlotButton, _loadSlotButton, _openButton, _pathButton,
-            _unloadButton, _settingButton, _unlockButton, _browseButton, _lockButton, _aboutButton, _light
-        });
-        Controls.Add(_panel);
-        ClientSize = new Size(FormClientWidth, FormClientHeight); // 96-dpi units; the form scales itself for other DPIs
-
-        _aboutButton.Click += (sender, e) => NotPortedYet("About");
-        _settingButton.Click += (sender, e) => OpenSettings();
-        _browseButton.Click += (sender, e) => Browse();
-        _lockButton.Click += (sender, e) => LockFolder();
-        _unlockButton.Click += (sender, e) => UnlockFolder();
-        _openButton.Click += (sender, e) => OpenFolder();
-        _unloadButton.Click += (sender, e) => UnloadFolder();
-        _loadSlotButton.Click += (sender, e) => LoadSlot();
-        _saveSlotButton.Click += (sender, e) => SaveSlot();
-        _clearSlotButton.Click += (sender, e) => ClearSlot();
-        _moreButton.Click += (sender, e) => { _addressLines++; ApplyAddressLines(); };
-        _lessButton.Click += (sender, e) => { _addressLines--; ApplyAddressLines(); };
-        _light.Click += (sender, e) => ShowSlotTip();
-
-        // Disabled until there is something to act on (like the designer).
-        foreach (var button in new[] { _lockButton, _unlockButton, _unloadButton, _openButton, _loadSlotButton, _saveSlotButton, _clearSlotButton, _moreButton })
-        {
-            button.Enabled = false;
-        }
-
-        ResumeLayout(false);
-        PerformLayout();
-        ApplyDesignerAnchors();
-    }
-
-    /// <summary>
-    /// The anchors of the original designer. They are set after the first layout so each control measures its
-    /// distances from its final position (setting them earlier pushed the right-hand controls out of view).
-    /// </summary>
-    private void ApplyDesignerAnchors()
-    {
-        const AnchorStyles topRight = AnchorStyles.Top | AnchorStyles.Right;
-        const AnchorStyles topLeftRight = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-
-        _lockButton.Anchor = _unlockButton.Anchor = _unloadButton.Anchor = topRight;
-        _clearSlotButton.Anchor = topRight;
-        _moreButton.Anchor = _lessButton.Anchor = topRight;
-        _openButton.Anchor = _loadSlotButton.Anchor = _pathButton.Anchor = topLeftRight;
-        _addressLabel.Anchor = topLeftRight;
-        _infoGroup.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-    }
-
-    // ---------------------------------------------------------------- theme, skin and the Setting window
-
-    private void ApplyTheme() => _manager.GlobalPaletteMode = ThemeMapper.ToPaletteMode(_settings.Theme);
-
-    /// <summary>
-    /// Loads the background picture and shows it as the window's own background (the "cast on the form" of the 2008 version),
-    /// and applies the info-box transparency.
-    /// </summary>
-    private void ApplySkin()
-    {
-        var oldImage = _skinImage;
-        _skinImage = null;
-
-        var path = _skinStore.GetPath(_settings.SkinImageFile);
-        if (path != null)
-        {
-            try
-            {
-                _skinImage = SkinImageLoader.Load(path);
-            }
-            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is OutOfMemoryException || ex is ArgumentException)
-            {
-                SetStatus("Can't show image in main form", ex.Message);
-            }
-        }
-
-        oldImage?.Dispose();
-        UpdateSkinBackground();
-
-        // "Transparent for Info Section": the info box lets the background show through.
-        if (_settings.TransparentInfo)
-        {
-            _infoGroup.StateCommon.Back.Color1 = Color.Transparent;
-            _infoGroup.StateCommon.Back.Color2 = Color.Transparent;
-            _infoGroup.Panel.StateCommon.Color1 = Color.Transparent;
-            _infoGroup.Panel.StateCommon.Color2 = Color.Transparent;
-        }
-        else
-        {
-            _infoGroup.StateCommon.Back.Color1 = Color.Empty;
-            _infoGroup.StateCommon.Back.Color2 = Color.Empty;
-            _infoGroup.Panel.StateCommon.Color1 = Color.Empty;
-            _infoGroup.Panel.StateCommon.Color2 = Color.Empty;
-        }
-
-        _infoGroup.Invalidate(true);
-    }
-
-    /// <summary>
-    /// Draws the picture once for the whole window (frame included) and uses it twice: as the background of the panel
-    /// behind the buttons, and as the background of the window frame around it. The frame then shows the same picture
-    /// instead of standing out as a thick box.
-    /// </summary>
-    private void UpdateSkinBackground()
-    {
-        var oldPanelImage = _skinRendered;
-        var oldFrameImage = _frameRendered;
-        _skinRendered = null;
-        _frameRendered = null;
-
-        var origin = PointToScreen(Point.Empty);
-        var crop = new Rectangle(origin.X - Left, origin.Y - Top, _panel.ClientSize.Width, _panel.ClientSize.Height);
-
-        if (_skinImage != null && Width > 0 && Height > 0)
-        {
-            _frameRendered = SkinRenderer.Render(_skinImage, _settings.SkinImageMode, Size);
-            crop.Intersect(new Rectangle(Point.Empty, _frameRendered.Size));
-            if (crop.Width > 0 && crop.Height > 0) _skinRendered = _frameRendered.Clone(crop, _frameRendered.PixelFormat);
-        }
-
-        _panel.StateCommon.Image = _skinRendered;
-        _panel.StateCommon.ImageStyle = PaletteImageStyle.TopLeft;
-        var frame = StateCommon?.Back;
-        if (frame != null)
-        {
-            frame.Image = _frameRendered;
-            frame.ImageStyle = PaletteImageStyle.TopLeft;
-        }
-
-        oldPanelImage?.Dispose();
-        oldFrameImage?.Dispose();
-        _panel.Invalidate();
-        Invalidate();
-    }
-
-    protected override void OnResize(EventArgs e)
-    {
-        base.OnResize(e);
-        if (_skinImage != null) UpdateSkinBackground(); // the window grows with the address lines
-    }
-
-    private void OpenSettings()
-    {
-        if (_settingForm != null && !_settingForm.IsDisposed)
-        {
-            _settingForm.Activate();
-            return;
-        }
-
-        _settingForm = new SettingForm(_settings, _store, _skinStore, _manager);
-        _settingForm.Applied += (sender, e) =>
-        {
-            ApplyTheme();
-            ApplySkin();
-        };
-        _settingForm.FormClosed += (sender, e) => _settingForm = null;
-        _settingForm.Show(this);
-    }
-
-    private KryptonContextMenu BuildPathMenu()
-    {
-        var items = new KryptonContextMenuItems { ImageColumn = false }; // no empty icon strip on the left, like the 2008 menu
-        for (var slot = 1; slot <= AppSettings.PathSlotCount; slot++)
-        {
-            var number = slot;
-            var item = new KryptonContextMenuItem("Path " + slot);
-            item.Click += (sender, e) => ChooseSlot(number);
-            items.Items.Add(item);
-        }
-
-        var menu = new KryptonContextMenu();
-        menu.Items.Add(items);
-        return menu;
-    }
-
-    private void NotPortedYet(string what) =>
-        MessageBox.Show(this, "The " + what + " window is not ported to this version yet (issue #3).", Text,
-            MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-    private int Scale(int pixels96) => (int)Math.Round(pixels96 * DeviceDpi / 96.0);
-
-    /// <summary>The address box grows one line per click and the window grows with it (like the original).</summary>
-    private void ApplyAddressLines()
-    {
-        if (_addressLines > MaxLines) _addressLines = 1;
-        if (_addressLines < 1) _addressLines = 1;
-
-        _addressLabel.Height = Scale(LineHeight * _addressLines);
-        _lessButton.Visible = _addressLines > 1;
-        if (_addressLines > 1) _lessButton.Top = Scale(47 - 2 * LineHeight + LineHeight * _addressLines);
-        ClientSize = new Size(ClientSize.Width, Scale(FormClientHeight - LineHeight + LineHeight * _addressLines));
+        InitializeComponent();
+        ApplyTheme(); // the saved theme; the original default is Light-Blue (Office 2007 Blue)
     }
 
     // ---------------------------------------------------------------- start and close
 
-    private void OnStart()
+    private void MainForm_Load(object? sender, EventArgs e)
     {
         _addressLines = 1;
         ApplyAddressLines();
@@ -344,7 +68,7 @@ public sealed class MainForm : ChromeForm
         ActiveControl = null;
     }
 
-    protected override void OnFormClosing(FormClosingEventArgs e)
+    private void MainForm_FormClosing(object? sender, FormClosingEventArgs e)
     {
         if (_session.State == FolderState.Unlocked && _settings.SecurityQuestion)
         {
@@ -361,55 +85,27 @@ public sealed class MainForm : ChromeForm
 
         _settings.LastAddress = _session.BasePath ?? string.Empty;
         SaveSettings();
-        base.OnFormClosing(e);
     }
 
-    // ---------------------------------------------------------------- folder actions
+    // ---------------------------------------------------------------- buttons
 
-    private void Browse()
+    private void btnAbout_Click(object? sender, EventArgs e) => NotPortedYet("About");
+
+    private void btnSetting_Click(object? sender, EventArgs e) => OpenSettings();
+
+    private void btnBrowse_Click(object? sender, EventArgs e)
     {
-        using (var dialog = new FolderBrowserDialog
-        {
-            ShowNewFolderButton = true,
-            Description = "Please ,choose any folder must become lock or unlock"
-        })
-        {
-            if (_session.BasePath != null) dialog.SelectedPath = _session.BasePath;
-            if (dialog.ShowDialog(this) == DialogResult.OK) LoadFolder(dialog.SelectedPath);
-        }
+        if (_session.BasePath != null) folderBrowserDialog1.SelectedPath = _session.BasePath;
+        if (folderBrowserDialog1.ShowDialog(this) == DialogResult.OK) LoadFolder(folderBrowserDialog1.SelectedPath);
     }
 
-    private void LoadFolder(string path)
-    {
-        if (_session.TryLoad(path))
-            SetStatus(_session.State == FolderState.Locked ? "Locked Folder Loaded" : "Unlocked Folder Loaded");
-        else
-            SetStatus("path not found");
-
-        RefreshUi();
-    }
-
-    private void LockFolder()
+    private void btnLock_Click(object? sender, EventArgs e)
     {
         if (TryLock()) SetStatus("Folder Locked");
         RefreshUi();
     }
 
-    private bool TryLock()
-    {
-        try
-        {
-            _session.Lock();
-            return true;
-        }
-        catch (Exception ex) when (IsFileProblem(ex))
-        {
-            SetStatus("Can't Lock Folder!", ex.Message);
-            return false;
-        }
-    }
-
-    private void UnlockFolder()
+    private void btnUnlock_Click(object? sender, EventArgs e)
     {
         try
         {
@@ -424,7 +120,7 @@ public sealed class MainForm : ChromeForm
         RefreshUi();
     }
 
-    private void OpenFolder()
+    private void btnOpen_Click(object? sender, EventArgs e)
     {
         var path = _session.CurrentPath;
         if (path == null || _session.State != FolderState.Unlocked) return;
@@ -439,7 +135,7 @@ public sealed class MainForm : ChromeForm
         }
     }
 
-    private void UnloadFolder()
+    private void btnUnload_Click(object? sender, EventArgs e)
     {
         if (_session.State == FolderState.Unlocked && _settings.SecurityQuestion)
         {
@@ -471,6 +167,44 @@ public sealed class MainForm : ChromeForm
         RefreshUi();
     }
 
+    private void btnMoreInfo_Click(object? sender, EventArgs e)
+    {
+        _addressLines++;
+        ApplyAddressLines();
+    }
+
+    private void btnLessInfo_Click(object? sender, EventArgs e)
+    {
+        _addressLines--;
+        ApplyAddressLines();
+    }
+
+    // ---------------------------------------------------------------- folder actions
+
+    private void LoadFolder(string path)
+    {
+        if (_session.TryLoad(path))
+            SetStatus(_session.State == FolderState.Locked ? "Locked Folder Loaded" : "Unlocked Folder Loaded");
+        else
+            SetStatus("path not found");
+
+        RefreshUi();
+    }
+
+    private bool TryLock()
+    {
+        try
+        {
+            _session.Lock();
+            return true;
+        }
+        catch (Exception ex) when (IsFileProblem(ex))
+        {
+            SetStatus("Can't Lock Folder!", ex.Message);
+            return false;
+        }
+    }
+
     /// <summary>Forgets the loaded folder and puts the window back to its starting size.</summary>
     private void ResetProgram()
     {
@@ -488,16 +222,26 @@ public sealed class MainForm : ChromeForm
             MessageBoxIcon.Question,
             MessageBoxDefaultButton.Button3);
 
+    private void NotPortedYet(string what) =>
+        MessageBox.Show(this, "The " + what + " window is not ported to this version yet (issue #3).", Text,
+            MessageBoxButtons.OK, MessageBoxIcon.Information);
+
     // ---------------------------------------------------------------- saved folders
+
+    /// <summary>Every "Path N" menu entry runs this; N comes from the command's text.</summary>
+    private void kryptonCommand_Execute(object? sender, EventArgs e)
+    {
+        if (sender is KryptonCommand command && int.TryParse(command.Text.Replace("Path ", string.Empty), out var slot)) ChooseSlot(slot);
+    }
 
     private void ChooseSlot(int slot)
     {
         _slot = slot;
-        _pathButton.Text = "Path " + slot;
+        DrpBtnPath.Text = "Path " + slot;
         RefreshUi();
     }
 
-    private void LoadSlot()
+    private void btnLoadLoc_Click(object? sender, EventArgs e)
     {
         if (_slot == 0) return;
 
@@ -506,7 +250,7 @@ public sealed class MainForm : ChromeForm
         else LoadFolder(path);
     }
 
-    private void SaveSlot()
+    private void btnSaveLoc_Click(object? sender, EventArgs e)
     {
         if (_slot == 0) return;
         if (_session.BasePath == null || _session.State == FolderState.Missing)
@@ -521,7 +265,7 @@ public sealed class MainForm : ChromeForm
         RefreshUi();
     }
 
-    private void ClearSlot()
+    private void btnClearLoc_Click(object? sender, EventArgs e)
     {
         if (_slot == 0) return;
 
@@ -532,7 +276,7 @@ public sealed class MainForm : ChromeForm
     }
 
     /// <summary>Clicking the light shows what the chosen slot holds (same texts as the original).</summary>
-    private void ShowSlotTip()
+    private void panel1_Click(object? sender, EventArgs e)
     {
         string text;
         if (_slot == 0)
@@ -563,7 +307,7 @@ public sealed class MainForm : ChromeForm
             }
         }
 
-        _toolTip.Show(text, _light, 0, _light.Height + 2, 5000);
+        _toolTip.Show(text, panel1, 0, panel1.Height + 2, 5000);
     }
 
     // ---------------------------------------------------------------- showing the state
@@ -572,45 +316,45 @@ public sealed class MainForm : ChromeForm
     {
         var state = _session.State;
         var loaded = _session.IsLoaded;
-        _addressLabel.Text = _session.BasePath ?? "None";
-        _lockButton.Enabled = state == FolderState.Unlocked;
-        _unlockButton.Enabled = state == FolderState.Locked;
-        _openButton.Enabled = state == FolderState.Unlocked;
-        _unloadButton.Enabled = loaded;
-        _moreButton.Enabled = loaded;
+        lblAddress.Text = _session.BasePath ?? "None";
+        btnLock.Enabled = state == FolderState.Unlocked;
+        btnUnlock.Enabled = state == FolderState.Locked;
+        btnOpen.Enabled = state == FolderState.Unlocked;
+        btnUnload.Enabled = loaded;
+        btnMoreInfo.Enabled = loaded;
 
-        _saveSlotButton.Enabled = _slot > 0;
-        _clearSlotButton.Enabled = _slot > 0;
+        btnSaveLoc.Enabled = _slot > 0;
+        btnClearLoc.Enabled = _slot > 0;
 
         if (_slot == 0)
         {
-            _light.BackColor = Color.Black;
-            _loadSlotButton.Enabled = false;
+            panel1.BackColor = Color.Black;
+            btnLoadLoc.Enabled = false;
             return;
         }
 
         var slotPath = _settings.GetSlot(_slot);
         if (slotPath.Length == 0)
         {
-            _light.BackColor = Color.Yellow;
-            _loadSlotButton.Enabled = false;
+            panel1.BackColor = Color.Yellow;
+            btnLoadLoc.Enabled = false;
         }
         else if (FolderLocker.GetState(slotPath) == FolderState.Missing)
         {
-            _light.BackColor = Color.Red;
-            _loadSlotButton.Enabled = false;
+            panel1.BackColor = Color.Red;
+            btnLoadLoc.Enabled = false;
         }
         else
         {
-            _light.BackColor = Color.Green;
-            _loadSlotButton.Enabled = true;
+            panel1.BackColor = Color.Green;
+            btnLoadLoc.Enabled = true;
         }
     }
 
     private void SetStatus(string text, string? detail = null)
     {
-        _statusLabel.Text = text;
-        _toolTip.SetToolTip(_statusLabel, detail ?? string.Empty);
+        lblStatus.Text = text;
+        _toolTip.SetToolTip(lblStatus, detail ?? string.Empty);
     }
 
     private void SaveSettings()
@@ -627,4 +371,127 @@ public sealed class MainForm : ChromeForm
 
     private static bool IsFileProblem(Exception ex) =>
         ex is IOException || ex is UnauthorizedAccessException || ex is InvalidOperationException;
+
+    private int Scale(int pixels96) => (int)Math.Round(pixels96 * DeviceDpi / 96.0);
+
+    /// <summary>The address box grows one line per click and the window grows with it (like the original).</summary>
+    private void ApplyAddressLines()
+    {
+        if (_addressLines > MaxLines) _addressLines = 1;
+        if (_addressLines < 1) _addressLines = 1;
+
+        lblAddress.Height = Scale(LineHeight * _addressLines);
+        btnLessInfo.Visible = _addressLines > 1;
+        if (_addressLines > 1) btnLessInfo.Top = Scale(47 - 2 * LineHeight + LineHeight * _addressLines);
+        ClientSize = new Size(ClientSize.Width, Scale(FormClientHeight - LineHeight + LineHeight * _addressLines));
+    }
+
+    // ---------------------------------------------------------------- theme, skin and the Setting window
+
+    private void ApplyTheme() => kryptonManager.GlobalPaletteMode = ThemeMapper.ToPaletteMode(_settings.Theme);
+
+    /// <summary>
+    /// Loads the background picture and shows it as the window's own background (the "cast on the form" of the 2008 version),
+    /// and applies the info-box transparency.
+    /// </summary>
+    private void ApplySkin()
+    {
+        var oldImage = _skinImage;
+        _skinImage = null;
+
+        var path = _skinStore.GetPath(_settings.SkinImageFile);
+        if (path != null)
+        {
+            try
+            {
+                _skinImage = SkinImageLoader.Load(path);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is OutOfMemoryException || ex is ArgumentException)
+            {
+                SetStatus("Can't show image in main form", ex.Message);
+            }
+        }
+
+        oldImage?.Dispose();
+        UpdateSkinBackground();
+
+        // "Transparent for Info Section": the info box lets the background show through.
+        if (_settings.TransparentInfo)
+        {
+            groupBox1.StateCommon.Back.Color1 = Color.Transparent;
+            groupBox1.StateCommon.Back.Color2 = Color.Transparent;
+            groupBox1.Panel.StateCommon.Color1 = Color.Transparent;
+            groupBox1.Panel.StateCommon.Color2 = Color.Transparent;
+        }
+        else
+        {
+            groupBox1.StateCommon.Back.Color1 = Color.Empty;
+            groupBox1.StateCommon.Back.Color2 = Color.Empty;
+            groupBox1.Panel.StateCommon.Color1 = Color.Empty;
+            groupBox1.Panel.StateCommon.Color2 = Color.Empty;
+        }
+
+        groupBox1.Invalidate(true);
+    }
+
+    /// <summary>
+    /// Draws the picture once for the whole window (frame included) and uses it twice: as the background of the panel
+    /// behind the buttons, and as the background of the window frame around it. The frame then shows the same picture
+    /// instead of standing out as a thick box.
+    /// </summary>
+    private void UpdateSkinBackground()
+    {
+        var oldPanelImage = _skinRendered;
+        var oldFrameImage = _frameRendered;
+        _skinRendered = null;
+        _frameRendered = null;
+
+        var origin = PointToScreen(Point.Empty);
+        var crop = new Rectangle(origin.X - Left, origin.Y - Top, kryptonPanel.ClientSize.Width, kryptonPanel.ClientSize.Height);
+
+        if (_skinImage != null && Width > 0 && Height > 0)
+        {
+            _frameRendered = SkinRenderer.Render(_skinImage, _settings.SkinImageMode, Size);
+            crop.Intersect(new Rectangle(Point.Empty, _frameRendered.Size));
+            if (crop.Width > 0 && crop.Height > 0) _skinRendered = _frameRendered.Clone(crop, _frameRendered.PixelFormat);
+        }
+
+        kryptonPanel.StateCommon.Image = _skinRendered;
+        kryptonPanel.StateCommon.ImageStyle = PaletteImageStyle.TopLeft;
+        var frame = StateCommon?.Back;
+        if (frame != null)
+        {
+            frame.Image = _frameRendered;
+            frame.ImageStyle = PaletteImageStyle.TopLeft;
+        }
+
+        oldPanelImage?.Dispose();
+        oldFrameImage?.Dispose();
+        kryptonPanel.Invalidate();
+        Invalidate();
+    }
+
+    protected override void OnResize(EventArgs e)
+    {
+        base.OnResize(e);
+        if (_skinImage != null) UpdateSkinBackground(); // the window grows with the address lines
+    }
+
+    private void OpenSettings()
+    {
+        if (_settingForm != null && !_settingForm.IsDisposed)
+        {
+            _settingForm.Activate();
+            return;
+        }
+
+        _settingForm = new SettingForm(_settings, _store, _skinStore);
+        _settingForm.Applied += (sender, e) =>
+        {
+            ApplyTheme();
+            ApplySkin();
+        };
+        _settingForm.FormClosed += (sender, e) => _settingForm = null;
+        _settingForm.Show(this);
+    }
 }

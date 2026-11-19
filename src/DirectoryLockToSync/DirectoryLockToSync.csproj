@@ -11,6 +11,8 @@
     <RootNamespace>DirectoryLockToSync</RootNamespace>
     <AssemblyName>DirectoryLockToSync</AssemblyName>
     <ApplicationIcon>Icon1.ico</ApplicationIcon>
+    <!-- the designer stores the window icon in the .resx; this lets the SDK build non-text resources -->
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
 
   <!-- .NET Framework gets high-DPI from the manifest; .NET 10 sets it in code (Program.cs). -->

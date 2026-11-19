@@ -58,6 +58,13 @@ Open `DirectoryLockToSync.slnx` in your editor, or from the command line:
 
     dotnet test DirectoryLockToSync.slnx
 
+## User interface
+
+Every window is a normal Windows Forms designer form: `Name.cs` has the behaviour, `Name.Designer.cs` holds the layout
+(`InitializeComponent`), and `Name.resx` the resources. Open them in the Visual Studio or Rider designer to move or add
+controls. The layout was taken from the original 2008 designer files, so control names (`btnLock`, `DrpBtnPath`,
+`groupBox1`, ...) match the old project.
+
 ## Contributing
 
 Every change is linked to a GitHub issue. Commit messages look like:
