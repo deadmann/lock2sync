@@ -4,7 +4,7 @@
 - Source of truth: D:\Projects\2008\Lock-To-Sync-V1.1.0.0 Premium (never edited; this repo is a replica).
 - Target: .NET 10 WinForms + Krypton.Toolkit (Krypton Suite, NuGet). Goal: premium look, GitHub-ready, installable.
   Krypton is WinForms-only; WPF libraries (MahApps, WPF-UI) look different. A WPF version may come later.
-- Name: "Directory Lock To Sync"; drop "Premium" (the plain WinForms source is lost). Suggested GitHub repo: directory-lock-to-sync.
+- Name: "Directory Lock To Sync"; drop "Premium" (the plain WinForms source is lost). GitHub repo (empty, created by the author): https://github.com/deadmann/lock2sync - the repo keeps the short name lock2sync, the product name stays "Directory Lock To Sync".
 - Never use "Tak System" (it never existed as a company). Publisher/author: Hassan Faghihi.
 - Step 1 = keep current behaviour exactly. Improvements below are deferred.
 - Git history: root commit 2007-03-03 (README/HISTORY), source import 2008-11-22, then new work with real dates.
