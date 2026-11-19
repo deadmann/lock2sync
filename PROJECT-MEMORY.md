@@ -4,8 +4,11 @@
 - Source of truth: D:\Projects\2008\Lock-To-Sync-V1.1.0.0 Premium (never edited; this repo is a replica).
 - Target: dual build net48 + net10.0(-windows) from one SDK-style source; WinForms + Krypton.Toolkit 110.26.11.306 (BSD-3, NuGet).
   net48 is the main download (preinstalled on Win10 1903+/11, no runtime prompt); net10 optional. Next version: 4.0.0.
-  Keep a copy of the Krypton package + packages.lock.json in the repo so the build can never be lost again.
-  The old Krypton 3.0.8 DLL is inside the old Setup1\Debug\LockToSync.msi (recoverable via msiexec /a).
+  Packages restore from NuGet only (no vendor/ folder, no binaries in git, like Tahvieh); versions pinned in
+  Directory.Packages.props and locked in packages.lock.json (CI restores in locked mode).
+  The old Krypton 3.0.8 DLL (SHA-256 8225CED3...EAF7) is NOT in the repo (2008 license unclear); it is recoverable from
+  LockToSync.msi inside the public SourceForge zip (msiexec /a). The 2008-2010 source lives only in git history,
+  under the tag legacy-2008-2010; the untouched original is D:\Projects\2008\Lock-To-Sync-V1.1.0.0 Premium.
   Goal: premium look, GitHub-ready, installable. Avoid C# features missing on net48 (ranges, etc.) in shared code.
   Krypton is WinForms-only; WPF libraries (MahApps, WPF-UI) look different. A WPF version may come later.
 - Name: "Directory Lock To Sync"; drop "Premium" (the plain WinForms source is lost). GitHub repo (empty, created by the author): https://github.com/deadmann/lock2sync - the repo keeps the short name lock2sync, the product name stays "Directory Lock To Sync".

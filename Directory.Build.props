@@ -1,0 +1,10 @@
+<Project>
+
+  <!-- Reproducible restores: each project writes packages.lock.json (commit it). -->
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- On CI (GitHub Actions sets CI=true) a restore must match the lock files exactly. -->
+    <RestoreLockedMode Condition="'$(CI)' == 'true'">true</RestoreLockedMode>
+  </PropertyGroup>
+
+</Project>

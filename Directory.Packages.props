@@ -1,0 +1,19 @@
+<Project>
+
+  <!-- Central package management: every package version is pinned here, nowhere else. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UI: Component Factory's Krypton Toolkit, continued as the Krypton Suite (BSD-3-Clause) -->
+    <PackageVersion Include="Krypton.Toolkit" Version="110.26.11.306" />
+
+    <!-- Tests -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+</Project>

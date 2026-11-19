@@ -440,7 +440,4 @@ dmypy.json
 # Windows application manifests (the "*.manifest" rule above is for Python packaging)
 !app.manifest
 !**/app.manifest
-# Vendored dependencies, kept so the build can never be lost again (see vendor/README.md)
-!vendor/
-!vendor/**/*.nupkg
-!vendor/**/*.dll
+# Packages are restored from NuGet (versions pinned in Directory.Packages.props, locked in packages.lock.json).
