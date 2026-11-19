@@ -5,7 +5,10 @@
 A small Windows utility to lock and unlock a folder.
 
 Started in 2007 by Hassan Faghihi (first release, V1.0.0.0: 2007-03-03).
-See [HISTORY.md](HISTORY.md) for the version history and how the dates were established.
+See [HISTORY.md](HISTORY.md) for what changed in each version and how the dates were found.
+
+Download: [GitHub Releases](https://github.com/deadmann/lock2sync/releases) or
+[SourceForge](https://sourceforge.net/projects/dirlock2sync/files/).
 
 > **Note:** locking renames the folder with an Explorer special-folder suffix, which hides it
 > from normal browsing. This is a convenience, not security: anyone can rename it back.
@@ -134,6 +137,25 @@ Do these steps in order:
 
 A published release is public. If a release is wrong, delete its tag and release on GitHub and publish a new version
 number instead of replacing the file.
+
+### SourceForge (automatic)
+
+When you click **Publish release** on GitHub, the workflow `.github/workflows/publish-sourceforge.yml` copies the
+installer and its `.sha256` file to the project's Files area on SourceForge
+(`Files / Directory Lock To Sync / <version> /`) and makes it the default download button.
+Pre-releases are not copied.
+
+How it works, and the one-time setup (already done for this repository):
+
+- GitHub logs in to SourceForge with a **deploy key**. This is an SSH key made only for this job. Its public half is
+  saved in the SourceForge account under **Me > Account Settings > SSH Settings**. Its private half is stored in the
+  repository secret `SF_SSH_KEY` (**Settings > Secrets and variables > Actions**). Secrets are hidden: nobody can read them back.
+- The secret `SF_API_KEY` is the SourceForge **Releases API Key** (**Account Settings > Preferences**). It is only used to
+  set the default download.
+- If a key is lost or leaked, make a new one, replace it in both places, and remove the old one.
+
+If the upload fails, open **Actions > Publish to SourceForge > Run workflow**, type the tag (for example `v4.0.1`)
+and run it again.
 
 ## User interface
 

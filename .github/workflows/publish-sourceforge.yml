@@ -1,0 +1,71 @@
+name: Publish to SourceForge
+
+# Runs when the maintainer clicks "Publish release" on a draft made by the Release workflow.
+# It copies the installer and its checksum to the project's Files area on SourceForge.
+# Pre-releases (tags such as v4.1.0-beta1) are skipped. Run it by hand from the Actions tab to retry a failed upload.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to upload, for example v4.0.1'
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  SF_PROJECT: dirlock2sync
+  SF_USER: deadmann
+
+jobs:
+  upload:
+    # A release published by hand-run always uploads; a normal release uploads only when it is not a pre-release.
+    if: github.event_name == 'workflow_dispatch' || github.event.release.prerelease == false
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download the installer from the GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          mkdir upload
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir upload --pattern 'DirectoryLockToSync-Setup-*'
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
+          ls -l upload
+
+      - name: Check the checksum
+        run: |
+          cd upload
+          sha256sum --check --ignore-missing *.sha256
+
+      - name: Upload to SourceForge
+        env:
+          SF_SSH_KEY: ${{ secrets.SF_SSH_KEY }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SF_SSH_KEY" > ~/.ssh/sf_key
+          chmod 600 ~/.ssh/sf_key
+          # Trust SourceForge's own host key, so nobody can pose as the server.
+          ssh-keyscan -t ed25519,rsa frs.sourceforge.net >> ~/.ssh/known_hosts
+          # Files go to: Files / Directory Lock To Sync / <version> /
+          sftp -i ~/.ssh/sf_key -b - "$SF_USER,$SF_PROJECT@frs.sourceforge.net" <<EOF
+          -mkdir "/home/frs/project/$SF_PROJECT/Directory Lock To Sync"
+          -mkdir "/home/frs/project/$SF_PROJECT/Directory Lock To Sync/$VERSION"
+          cd "/home/frs/project/$SF_PROJECT/Directory Lock To Sync/$VERSION"
+          lcd upload
+          put DirectoryLockToSync-Setup-$VERSION.exe
+          put DirectoryLockToSync-Setup-$VERSION.exe.sha256
+          EOF
+
+      - name: Make the installer the default download button
+        env:
+          SF_API_KEY: ${{ secrets.SF_API_KEY }}
+        run: |
+          curl --fail --silent --show-error -X PUT \
+            -H "Accept: application/json" \
+            --data-urlencode "default=windows" \
+            --data-urlencode "api_key=$SF_API_KEY" \
+            "https://sourceforge.net/projects/$SF_PROJECT/files/Directory%20Lock%20To%20Sync/$VERSION/DirectoryLockToSync-Setup-$VERSION.exe"
