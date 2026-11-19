@@ -15,8 +15,9 @@ Being rewritten (2026). Progress is tracked in the [issues](https://github.com/d
 - `src/DirectoryLockToSync.Core`: the lock/unlock logic, done and tested.
 - The Krypton user interface, installer and CI are planned for v4.0.0.
 - The 2008-2010 source is not in the tree. It is kept in git history under the tag `legacy-2008-2010`
-  (`git show legacy-2008-2010:"Lock To Sync/Lock To Sync/DLTS.cs"`). It does not build: the Component
-  Factory Krypton Toolkit it used is no longer distributed (see "Dependencies").
+  (`git show legacy-2008-2010:"Lock To Sync/DLTS.cs"`), exactly as it was. That alone does not build:
+  the Component Factory Krypton Toolkit it used is no longer distributed (see "Dependencies").
+  The tag `legacy-2008-2010-buildable` adds that DLL and a path to it, so the old source can be rebuilt.
 
 ## Requirements to work on this project
 
