@@ -11,6 +11,12 @@ public sealed partial class InputForm : KryptonForm
         InitializeComponent();
     }
 
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        WindowCorners.Round(Handle);
+    }
+
     /// <summary>What the user typed.</summary>
     public string Confirmation => txtVerify.Text;
 

@@ -224,6 +224,7 @@ namespace DirectoryLockToSync
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "About";
+            this.StateCommon.BackStyle = Krypton.Toolkit.PaletteBackStyle.PanelClient;
             this.TitleStyle = Krypton.Toolkit.KryptonFormTitleStyle.Classic;
             ((System.ComponentModel.ISupportInitialize)(this.kryptonPanel)).EndInit();
             this.kryptonPanel.ResumeLayout(false);

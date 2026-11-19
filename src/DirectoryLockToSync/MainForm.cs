@@ -473,6 +473,12 @@ public sealed partial class MainForm : KryptonForm
         Invalidate();
     }
 
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        WindowCorners.Round(Handle);
+    }
+
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);

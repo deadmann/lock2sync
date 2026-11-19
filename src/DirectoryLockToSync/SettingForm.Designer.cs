@@ -357,6 +357,7 @@ namespace DirectoryLockToSync
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Setting";
+            this.StateCommon.BackStyle = Krypton.Toolkit.PaletteBackStyle.PanelClient;
             this.TitleStyle = Krypton.Toolkit.KryptonFormTitleStyle.Classic;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.SettingForm_FormClosed);
             this.Load += new System.EventHandler(this.SettingForm_Load);

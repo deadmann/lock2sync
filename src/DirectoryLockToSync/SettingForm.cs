@@ -38,6 +38,12 @@ public sealed partial class SettingForm : KryptonForm
         InitializeComponent();
     }
 
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        WindowCorners.Round(Handle);
+    }
+
     // ---------------------------------------------------------------- showing the saved settings
 
     private void SettingForm_Load(object? sender, EventArgs e)

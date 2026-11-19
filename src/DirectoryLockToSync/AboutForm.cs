@@ -22,6 +22,12 @@ public sealed partial class AboutForm : KryptonForm
         labelCompanyName.Text = AttributeText<AssemblyCompanyAttribute>(assembly, a => a.Company, string.Empty);
     }
 
+    protected override void OnHandleCreated(EventArgs e)
+    {
+        base.OnHandleCreated(e);
+        WindowCorners.Round(Handle);
+    }
+
     private static string AttributeText<T>(Assembly assembly, Func<T, string> read, string fallback) where T : Attribute
     {
         var attribute = (T?)Attribute.GetCustomAttribute(assembly, typeof(T));
