@@ -291,21 +291,23 @@
   </data>
   <data name="textBoxDescription.Text" xml:space="preserve">
     <value>[Description]
-- This Program support windows 10 and 11
-- This program usage is for lock directory by give type to directory
+- Works on Windows 10 and 11.
+- Locks a folder by giving it a special folder type, so Explorer hides what is inside. Your files are not changed.
+- This is not strong security: anyone who knows how can unlock the folder.
 
 [Warning]
-- Don't uses this program about system directory
+- Do not use this program on system folders.
 
 [Change Log]
 ---Ver 4.0---
-- Rebuilt for current Windows: runs on .NET Framework 4.8 and .NET 10 with the Krypton Suite
-- The background picture works again, settings are kept in %AppData%, the password is stored as a hash
+- Rebuilt for current Windows. It runs on .NET Framework 4.8 and .NET 10, with the Krypton Suite toolkit.
+- The background picture works again. Settings are saved in %AppData%, and the password is saved as a hash (not as plain text).
+- Now comes with an installer, and the source code is open (GPL-3.0).
 
 ---Ver 1.1 Premium---
--Fix a bug in Path Reminder
+- Fixed a bug in the Path Reminder.
 
 ---Ver 1.0 Premium---
-- 99% use of 'Krypton Component'</value>
+- Built almost entirely with the Krypton Component toolkit.</value>
   </data>
 </root>
