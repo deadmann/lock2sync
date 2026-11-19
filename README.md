@@ -88,6 +88,29 @@ Your settings stay in `%AppData%\DirectoryLockToSync` (delete that folder if you
 The installer script is `installer\DirectoryLockToSync.iss`. Do not change its `AppId`: Windows uses it to upgrade an
 earlier install in place.
 
+## Publish a release (for the maintainer)
+
+A release is a version tag plus the installer attached to it, shown on the GitHub **Releases** page. Anyone can download
+from there without an account. Do these steps in order:
+
+1. Set the version in `src\DirectoryLockToSync\DirectoryLockToSync.csproj` (`<Version>`), commit it and push it to `main`.
+2. Build the installer: `powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1`.
+3. Write down its checksum, so people can check the download was not altered (it is not signed):
+
+       Get-FileHash artifacts\installer\DirectoryLockToSync-Setup-<version>.exe -Algorithm SHA256
+
+4. Create the release (needs the GitHub CLI, logged in with `gh auth login`). The tag is created from the pushed `main`:
+
+       gh release create v<version> artifacts\installer\DirectoryLockToSync-Setup-<version>.exe --repo deadmann/lock2sync --title "Directory Lock To Sync <version>" --prerelease --notes-file release-notes.md
+
+   `--prerelease` marks a test release; leave it out (or untick "pre-release" on the GitHub page) for the official one.
+5. In the notes say what changed, that Windows 10 (1903+) or 11 is needed, how to get past the SmartScreen warning
+   (**More info > Run anyway**), and paste the SHA-256 checksum.
+
+A published release is public. If a release is wrong, delete its tag and release on GitHub and publish a new version
+number instead of replacing the file. This manual process will be replaced by an automatic build when a version tag is
+pushed (issue #6).
+
 ## User interface
 
 Every window is a normal Windows Forms designer form: `Name.cs` has the behaviour, `Name.Designer.cs` holds the layout
