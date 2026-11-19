@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- net48 is the main build (preinstalled on Windows 10 1903+ and 11); net10.0-windows is the modern one. -->
+    <TargetFrameworks>net48;net10.0-windows</TargetFrameworks>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>DirectoryLockToSync</RootNamespace>
+    <AssemblyName>DirectoryLockToSync</AssemblyName>
+    <ApplicationIcon>Icon1.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <!-- .NET Framework gets high-DPI from the manifest; .NET 10 sets it in code (Program.cs). -->
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net48'">
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Product>Directory Lock To Sync</Product>
+    <Authors>Hassan Faghihi</Authors>
+    <Copyright>Copyright © Hassan Faghihi 2007-2026</Copyright>
+    <Version>4.0.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Krypton.Toolkit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DirectoryLockToSync.Core\DirectoryLockToSync.Core.csproj" />
+  </ItemGroup>
+
+</Project>

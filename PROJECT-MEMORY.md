@@ -23,6 +23,14 @@
 - Forms: KryptonDLTS (main), KryptonSetting, KryptonInput, KryptonAbout, Login; plain twins: DLTS, Setting, Input, About.
 - Settings are string flags ("1"/"0") via Properties.Settings (Image, Imagef, Transparent, Active, SecurityQuestion).
 - Krypton 3.0.8 (2008) DLL is lost; the project had no HintPath.
+- The 2008 login stored User/Pass/PasswordVerify as plain strings in settings -> in #3 store a salted hash instead.
+- Main window ported in #2 (KryptonForm, code-built layout, Krypton.Toolkit 110.x, namespace `Krypton.Toolkit`). The window keeps the
+  author's ORIGINAL design exactly (same coordinates, sizes, tab order, designer anchors, Office 2007 Blue palette, chevron
+  "more/less info" buttons, colour light, Path drop menu, Crimson status text). RULE: never redesign the look; port it 1:1,
+  only fix real defects. Only changes: title without "V1 Premium", saved slots store the unlocked name (so the light stays
+  green after locking), failure reasons in a tooltip.
+  Still to port in #3: KryptonSetting, KryptonAbout, KryptonInput, Login, skin image/transparency/zoom, Krypton themes
+  (old names Office2007Blue etc. map to new PaletteMode values).
 - AssemblyInfo.cs still says AssemblyCompany "Tak-System (None)" -> replace with the author's name when porting.
 
 ## Dating evidence

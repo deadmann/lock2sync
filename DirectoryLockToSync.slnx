@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/DirectoryLockToSync.Core/DirectoryLockToSync.Core.csproj" />
+    <Project Path="src/DirectoryLockToSync/DirectoryLockToSync.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/DirectoryLockToSync.Core.Tests/DirectoryLockToSync.Core.Tests.csproj" />

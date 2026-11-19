@@ -12,8 +12,11 @@ See [HISTORY.md](HISTORY.md) for the version history and how the dates were esta
 
 Being rewritten (2026). Progress is tracked in the [issues](https://github.com/deadmann/lock2sync/issues).
 
-- `src/DirectoryLockToSync.Core`: the lock/unlock logic, done and tested.
-- The Krypton user interface, installer and CI are planned for v4.0.0.
+- `src/DirectoryLockToSync.Core`: the lock/unlock logic, typed settings and folder session, done and tested.
+- `src/DirectoryLockToSync`: the Krypton main window, in the original 2008 design (browse, lock, unlock, open, unload, 10 saved folders).
+  Settings, About, password login and themes are still to come (#3), then the installer and CI.
+- Settings are stored in `%AppData%\DirectoryLockToSync\settings.xml`; `DirectoryLockToSync.exe --settings <file>`
+  uses another file instead.
 - The 2008-2010 source is not in the tree. It is kept in git history under the tag `legacy-2008-2010`
   (`git show legacy-2008-2010:"Lock To Sync/DLTS.cs"`), exactly as it was. That alone does not build:
   the Component Factory Krypton Toolkit it used is no longer distributed (see "Dependencies").
