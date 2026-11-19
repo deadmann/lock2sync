@@ -32,6 +32,7 @@ Being rewritten (2026). Progress is tracked in the [issues](https://github.com/d
 | .NET SDK 10 | build and test | https://dotnet.microsoft.com/download |
 | An editor | Visual Studio, Rider or VS Code (C# Dev Kit) | any |
 | GitHub CLI (`gh`) | issues and project board | `winget install GitHub.cli`, then `gh auth login` |
+| Inno Setup 6 | build the installer | `winget install JRSoftware.InnoSetup` |
 
 The app is built for **.NET Framework 4.8** (preinstalled on Windows 10 1903+ and Windows 11,
 nothing to install for users) and for **.NET 10**, from the same source.
@@ -57,6 +58,35 @@ That old installer is not guaranteed to keep working on future Windows versions,
 Open `DirectoryLockToSync.slnx` in your editor, or from the command line:
 
     dotnet test DirectoryLockToSync.slnx
+
+## Install (for users)
+
+You need Windows 10 (version 1903 or later) or Windows 11. Nothing else has to be installed first.
+
+1. Download `DirectoryLockToSync-Setup-<version>.exe` and double-click it.
+2. Windows may show a blue **"Windows protected your PC"** window, because the installer is not signed with a paid
+   certificate. This is normal. Click **More info**, then **Run anyway**.
+3. Choose **Install for me only** (no administrator needed) or **for all users**, then click **Next** and **Install**.
+4. Start it from the Start menu: **Directory Lock To Sync**.
+
+To remove it: **Settings > Apps > Installed apps > Directory Lock To Sync > Uninstall**.
+Your settings stay in `%AppData%\DirectoryLockToSync` (delete that folder if you want them gone).
+
+> **Important:** locking a folder only renames it, so uninstalling the program does **not** unlock your folders.
+> Unlock them before you uninstall (the uninstaller reminds you).
+
+## Build the installer (for developers)
+
+1. Install the .NET SDK 10 and Inno Setup 6. In a terminal: `winget install JRSoftware.InnoSetup`.
+2. From the repository folder run:
+
+       powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1
+
+3. The installer appears in `artifacts\installer\DirectoryLockToSync-Setup-<version>.exe` (about 5.5 MB).
+   The version number comes from `<Version>` in `src\DirectoryLockToSync\DirectoryLockToSync.csproj`.
+
+The installer script is `installer\DirectoryLockToSync.iss`. Do not change its `AppId`: Windows uses it to upgrade an
+earlier install in place.
 
 ## User interface
 
