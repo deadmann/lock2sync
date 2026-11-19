@@ -24,7 +24,8 @@ jobs:
         run: |
           $version = (dotnet msbuild src/DirectoryLockToSync/DirectoryLockToSync.csproj -getProperty:Version -p:TargetFramework=net48).Trim()
           $tag = "${{ github.ref_name }}"
-          if ("v$version" -ne $tag) { throw "The tag is $tag but the project file says version $version. Fix one of them and tag again." }
+          # v4.0.1 for version 4.0.1, or a test tag with a suffix such as v4.0.1-beta1
+          if ($tag -ne "v$version" -and -not $tag.StartsWith("v$version-")) { throw "The tag is $tag but the project file says version $version. Fix one of them and tag again." }
           "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Restore, build and test
