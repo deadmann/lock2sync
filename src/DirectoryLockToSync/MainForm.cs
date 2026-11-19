@@ -42,7 +42,8 @@ public sealed class MainForm : ChromeForm
     private readonly Panel _light = new Panel();
     private readonly KryptonPanel _panel = new KryptonPanel { Dock = DockStyle.Fill };
     private Image? _skinImage;       // the background picture as loaded
-    private Bitmap? _skinRendered;   // the picture drawn for the current window size and picture mode
+    private Bitmap? _skinRendered;   // the part of the picture behind the buttons
+    private Bitmap? _frameRendered;  // the same picture for the whole window, so the frame around it shows it too
     private SettingForm? _settingForm;
 
     private readonly KryptonGroup _infoGroup = new KryptonGroup();
@@ -228,25 +229,41 @@ public sealed class MainForm : ChromeForm
         _infoGroup.Invalidate(true);
     }
 
-    /// <summary>Draws the picture for the current window size and picture mode onto the panel behind all the buttons.</summary>
+    /// <summary>
+    /// Draws the picture once for the whole window (frame included) and uses it twice: as the background of the panel
+    /// behind the buttons, and as the background of the window frame around it. The frame then shows the same picture
+    /// instead of standing out as a thick box.
+    /// </summary>
     private void UpdateSkinBackground()
     {
-        var old = _skinRendered;
+        var oldPanelImage = _skinRendered;
+        var oldFrameImage = _frameRendered;
         _skinRendered = null;
+        _frameRendered = null;
 
-        if (_skinImage != null && _panel.ClientSize.Width > 0 && _panel.ClientSize.Height > 0)
+        var origin = PointToScreen(Point.Empty);
+        var crop = new Rectangle(origin.X - Left, origin.Y - Top, _panel.ClientSize.Width, _panel.ClientSize.Height);
+
+        if (_skinImage != null && Width > 0 && Height > 0)
         {
-            _skinRendered = SkinRenderer.Render(_skinImage, _settings.SkinImageMode, _panel.ClientSize);
-            _panel.StateCommon.Image = _skinRendered;
-            _panel.StateCommon.ImageStyle = PaletteImageStyle.TopLeft;
-        }
-        else
-        {
-            _panel.StateCommon.Image = null;
+            _frameRendered = SkinRenderer.Render(_skinImage, _settings.SkinImageMode, Size);
+            crop.Intersect(new Rectangle(Point.Empty, _frameRendered.Size));
+            if (crop.Width > 0 && crop.Height > 0) _skinRendered = _frameRendered.Clone(crop, _frameRendered.PixelFormat);
         }
 
-        old?.Dispose();
+        _panel.StateCommon.Image = _skinRendered;
+        _panel.StateCommon.ImageStyle = PaletteImageStyle.TopLeft;
+        var frame = StateCommon?.Back;
+        if (frame != null)
+        {
+            frame.Image = _frameRendered;
+            frame.ImageStyle = PaletteImageStyle.TopLeft;
+        }
+
+        oldPanelImage?.Dispose();
+        oldFrameImage?.Dispose();
         _panel.Invalidate();
+        Invalidate();
     }
 
     protected override void OnResize(EventArgs e)
