@@ -14,9 +14,9 @@ Being rewritten (2026). Progress is tracked in the [issues](https://github.com/d
 
 - `src/DirectoryLockToSync.Core`: the lock/unlock logic, done and tested.
 - The Krypton user interface, installer and CI are planned for v4.0.0.
-- `Lock To Sync/` and `Lock To Sync.sln` are the 2008-2010 source, kept as a reference only.
-  They do not build: the Component Factory Krypton Toolkit they used is no longer distributed
-  (see "Dependencies").
+- The 2008-2010 source is not in the tree. It is kept in git history under the tag `legacy-2008-2010`
+  (`git show legacy-2008-2010:"Lock To Sync/Lock To Sync/DLTS.cs"`). It does not build: the Component
+  Factory Krypton Toolkit it used is no longer distributed (see "Dependencies").
 
 ## Requirements to work on this project
 
@@ -36,17 +36,19 @@ nothing to install for users) and for **.NET 10**, from the same source.
 | Krypton.Toolkit | The "Component Factory Krypton Toolkit" used by the 2008 version (v3.0.8) was continued as the **Krypton Suite**: https://github.com/Krypton-Suite/Standard-Toolkit , NuGet package `Krypton.Toolkit`, BSD-3-Clause. This is the replacement for the old Component Factory SDK. |
 | xUnit | unit tests |
 
-The old Krypton 3.0.8 DLL is inside the 2008 installer (`LockToSync.msi`, in the SourceForge
-download). A pinned copy of the Krypton package will be kept in `vendor/` so the build can
-never be lost again.
+Versions are pinned in `Directory.Packages.props` and locked in `packages.lock.json` files, so a
+restore always gets exactly the same packages from NuGet.
+
+The old Krypton 3.0.8 DLL (`ComponentFactory.Krypton.Toolkit.dll`, SHA-256
+`8225CED36CC3F1EA7CFE918AD9D14B1E222EB0DB6432F76B4E0E1E7FE1C1EAF7`) is not in this repository.
+It can be recovered from the installer `LockToSync.msi` inside the SourceForge download
+`Lock-To-Sync-V1.1.0.0 Premium.zip` (`msiexec /a LockToSync.msi /qn TARGETDIR=<folder>`).
 
 ## Build and test
 
 Open `DirectoryLockToSync.slnx` in your editor, or from the command line:
 
     dotnet test DirectoryLockToSync.slnx
-
-`Lock To Sync.sln` is the old 2008 solution; ignore it.
 
 ## Contributing
 
