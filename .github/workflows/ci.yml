@@ -1,0 +1,30 @@
+name: CI
+
+# Builds the program for both targets (.NET Framework 4.8 and .NET 10) and runs the tests, on every push and pull request.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      # GitHub sets CI=true, so the restore must match the committed packages.lock.json files exactly.
+      - name: Restore
+        run: dotnet restore DirectoryLockToSync.slnx
+
+      - name: Build
+        run: dotnet build DirectoryLockToSync.slnx -c Release --no-restore
+
+      - name: Test (both targets)
+        run: dotnet test DirectoryLockToSync.slnx -c Release --no-build

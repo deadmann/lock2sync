@@ -423,11 +423,9 @@ namespace DirectoryLockToSync
             this.Controls.Add(this.kryptonPanel);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.MaximizeBox = false;
             this.Name = "MainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Directory Lock To Sync";
-            this.TitleStyle = Krypton.Toolkit.KryptonFormTitleStyle.Classic;
             this.TransparencyKey = System.Drawing.Color.Empty;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);

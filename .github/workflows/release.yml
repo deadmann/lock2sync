@@ -1,0 +1,72 @@
+name: Release
+
+# Push a version tag (for example v4.0.1) and this builds the installer and puts it on a DRAFT release.
+# Nothing becomes public until the maintainer opens the draft on GitHub and clicks "Publish release".
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Check that the tag matches the version in the project file
+        shell: pwsh
+        run: |
+          $version = (dotnet msbuild src/DirectoryLockToSync/DirectoryLockToSync.csproj -getProperty:Version -p:TargetFramework=net48).Trim()
+          $tag = "${{ github.ref_name }}"
+          if ("v$version" -ne $tag) { throw "The tag is $tag but the project file says version $version. Fix one of them and tag again." }
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Restore, build and test
+        run: |
+          dotnet restore DirectoryLockToSync.slnx
+          dotnet build DirectoryLockToSync.slnx -c Release --no-restore
+          dotnet test DirectoryLockToSync.slnx -c Release --no-build
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Build the installer
+        shell: pwsh
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File installer\build-installer.ps1
+
+      - name: Checksum and release notes
+        shell: pwsh
+        run: |
+          $setup = "artifacts\installer\DirectoryLockToSync-Setup-$env:VERSION.exe"
+          $hash = (Get-FileHash $setup -Algorithm SHA256).Hash
+          "$hash  DirectoryLockToSync-Setup-$env:VERSION.exe" | Out-File "$setup.sha256" -Encoding ascii
+          @"
+          Directory Lock To Sync $env:VERSION
+
+          **Install:** download ``DirectoryLockToSync-Setup-$env:VERSION.exe`` below and double-click it. Needs Windows 10 (version 1903 or later) or Windows 11.
+
+          Windows may show a blue "Windows protected your PC" window, because the installer is not signed with a paid certificate.
+          Click **More info**, then **Run anyway**.
+
+          **Check the download (optional):** its SHA-256 checksum is
+
+          ``$hash``
+
+          Locking a folder only renames it, so uninstalling the program does not unlock your folders. Unlock them first.
+          "@ | Out-File release-notes.md -Encoding utf8
+
+      - name: Create the draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $setup = "artifacts\installer\DirectoryLockToSync-Setup-$env:VERSION.exe"
+          $flags = @("--draft", "--notes-file", "release-notes.md")
+          if ("${{ github.ref_name }}" -match "-") { $flags += "--prerelease" }   # v4.1.0-beta1 is marked as a test release
+          gh release create "${{ github.ref_name }}" $setup "$setup.sha256" --title "Directory Lock To Sync $env:VERSION" @flags

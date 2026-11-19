@@ -1,5 +1,7 @@
 # Directory Lock To Sync
 
+[![CI](https://github.com/deadmann/lock2sync/actions/workflows/ci.yml/badge.svg)](https://github.com/deadmann/lock2sync/actions/workflows/ci.yml)
+
 A small Windows utility to lock and unlock a folder.
 
 Started in 2007 by Hassan Faghihi (first release, V1.0.0.0: 2007-03-03).
@@ -91,7 +93,30 @@ earlier install in place.
 ## Publish a release (for the maintainer)
 
 A release is a version tag plus the installer attached to it, shown on the GitHub **Releases** page. Anyone can download
-from there without an account. Do these steps in order:
+from there without an account.
+
+### The automatic way (use this one)
+
+GitHub builds the installer for you (workflow `.github/workflows/release.yml`):
+
+1. Set the version in `src\DirectoryLockToSync\DirectoryLockToSync.csproj` (`<Version>`), commit it and push it to `main`.
+   Wait for the **CI** check on the commit to turn green (it builds and tests both targets).
+2. Create the tag and push it. The tag must be `v` plus the version, for example `v4.0.1`:
+
+       git tag v4.0.1
+       git push origin v4.0.1
+
+3. After a few minutes a **draft** release appears under **Releases**, with `DirectoryLockToSync-Setup-<version>.exe`
+   and its `.sha256` file already attached and the notes (including the checksum) filled in. Nothing is public yet.
+   Open the draft, read it, tick **pre-release** if it is only a test, and click **Publish release**.
+
+A tag with a dash, like `v4.1.0-beta1`, is marked as a pre-release automatically.
+If the tag does not match the project version, the run stops with a clear message and publishes nothing: delete the tag
+(`git push origin :refs/tags/v4.0.1` and `git tag -d v4.0.1`), fix the version and tag again.
+
+### The manual way (if GitHub Actions is not available)
+
+Do these steps in order:
 
 1. Set the version in `src\DirectoryLockToSync\DirectoryLockToSync.csproj` (`<Version>`), commit it and push it to `main`.
 2. Build the installer: `powershell -ExecutionPolicy Bypass -File installer\build-installer.ps1`.
@@ -108,8 +133,7 @@ from there without an account. Do these steps in order:
    (**More info > Run anyway**), and paste the SHA-256 checksum.
 
 A published release is public. If a release is wrong, delete its tag and release on GitHub and publish a new version
-number instead of replacing the file. This manual process will be replaced by an automatic build when a version tag is
-pushed (issue #6).
+number instead of replacing the file.
 
 ## User interface
 
