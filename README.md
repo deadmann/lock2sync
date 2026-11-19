@@ -40,9 +40,10 @@ Versions are pinned in `Directory.Packages.props` and locked in `packages.lock.j
 restore always gets exactly the same packages from NuGet.
 
 The old Krypton 3.0.8 DLL (`ComponentFactory.Krypton.Toolkit.dll`, SHA-256
-`8225CED36CC3F1EA7CFE918AD9D14B1E222EB0DB6432F76B4E0E1E7FE1C1EAF7`) is not in this repository.
-It can be recovered from the installer `LockToSync.msi` inside the SourceForge download
-`Lock-To-Sync-V1.1.0.0 Premium.zip` (`msiexec /a LockToSync.msi /qn TARGETDIR=<folder>`).
+`8225CED36CC3F1EA7CFE918AD9D14B1E222EB0DB6432F76B4E0E1E7FE1C1EAF7`) is not in this repository, and nothing here depends on it: the NuGet package replaces it.
+For reference only: it was extracted from the installer `LockToSync.msi` (inside the SourceForge
+download `Lock-To-Sync-V1.1.0.0 Premium.zip`) with `msiexec /a`, on Windows 11 in November 2026.
+That old installer is not guaranteed to keep working on future Windows versions, so do not rely on it.
 
 ## Build and test
 

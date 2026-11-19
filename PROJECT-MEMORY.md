@@ -6,8 +6,9 @@
   net48 is the main download (preinstalled on Win10 1903+/11, no runtime prompt); net10 optional. Next version: 4.0.0.
   Packages restore from NuGet only (no vendor/ folder, no binaries in git, like Tahvieh); versions pinned in
   Directory.Packages.props and locked in packages.lock.json (CI restores in locked mode).
-  The old Krypton 3.0.8 DLL (SHA-256 8225CED3...EAF7) is NOT in the repo (2008 license unclear); it is recoverable from
-  LockToSync.msi inside the public SourceForge zip (msiexec /a). The 2008-2010 source lives only in git history,
+  The old Krypton 3.0.8 DLL (SHA-256 8225CED3...EAF7) is NOT in the repo (2008 license unclear) and nothing depends on it. It was
+  extracted from LockToSync.msi (SourceForge zip) with msiexec /a on Win11 in 2026; do not rely on that installer working later.
+  The folder name "2008" in the path is the year of the first known version; keep the project there. The 2008-2010 source lives only in git history,
   under the tag legacy-2008-2010; the untouched original is D:\Projects\2008\Lock-To-Sync-V1.1.0.0 Premium.
   Goal: premium look, GitHub-ready, installable. Avoid C# features missing on net48 (ranges, etc.) in shared code.
   Krypton is WinForms-only; WPF libraries (MahApps, WPF-UI) look different. A WPF version may come later.
