@@ -20,6 +20,14 @@ public static class FolderLocker
     public static string GetUnlockedPath(string folderPath) =>
         IsLocked(folderPath) ? folderPath.Substring(0, folderPath.Length - LockSuffix.Length) : folderPath;
 
+    /// <summary>Tells whether the folder exists under its normal name, under its locked name, or not at all.</summary>
+    public static FolderState GetState(string folderPath)
+    {
+        if (Directory.Exists(GetUnlockedPath(folderPath))) return FolderState.Unlocked;
+        if (Directory.Exists(GetLockedPath(folderPath))) return FolderState.Locked;
+        return FolderState.Missing;
+    }
+
     /// <summary>Renames the folder to its locked name and returns the new path. Does nothing if already locked.</summary>
     public static string Lock(string folderPath)
     {

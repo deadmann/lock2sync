@@ -81,4 +81,48 @@ public class FolderLockerTests : IDisposable
         // Act & Assert
         Assert.Throws<DirectoryNotFoundException>(() => FolderLocker.Lock(missing));
     }
+
+    [Fact]
+    public void GetState_ReturnsUnlocked_WhenFolderHasNormalName()
+    {
+        // Arrange
+        var folder = Path.Combine(_root, "photos");
+        Directory.CreateDirectory(folder);
+
+        // Act
+        var state = FolderLocker.GetState(folder);
+
+        // Assert
+        Assert.Equal(FolderState.Unlocked, state);
+    }
+
+    [Fact]
+    public void GetState_ReturnsLocked_ForBothTheNormalAndTheLockedPath()
+    {
+        // Arrange
+        var folder = Path.Combine(_root, "photos");
+        Directory.CreateDirectory(folder);
+        var lockedPath = FolderLocker.Lock(folder);
+
+        // Act
+        var fromNormalPath = FolderLocker.GetState(folder);
+        var fromLockedPath = FolderLocker.GetState(lockedPath);
+
+        // Assert
+        Assert.Equal(FolderState.Locked, fromNormalPath);
+        Assert.Equal(FolderState.Locked, fromLockedPath);
+    }
+
+    [Fact]
+    public void GetState_ReturnsMissing_WhenNeitherNameExists()
+    {
+        // Arrange
+        var missing = Path.Combine(_root, "nothing-here");
+
+        // Act
+        var state = FolderLocker.GetState(missing);
+
+        // Assert
+        Assert.Equal(FolderState.Missing, state);
+    }
 }
