@@ -21,7 +21,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <AssemblyTitle>Directory Lock To Sync</AssemblyTitle>
     <Product>Directory Lock To Sync</Product>
+    <Company>Hassan Faghihi</Company>
     <Authors>Hassan Faghihi</Authors>
     <Copyright>Copyright © Hassan Faghihi 2007-2026</Copyright>
     <Version>4.0.0</Version>

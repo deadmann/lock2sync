@@ -14,7 +14,19 @@ internal static class Program
 #endif
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
-        Application.Run(new MainForm(new SettingsStore(GetSettingsPath(args))));
+        var store = new SettingsStore(GetSettingsPath(args));
+
+        // When the password is active, ask for it before the main window exists; Exit simply ends the program.
+        var settings = store.Load();
+        if (settings.LoginEnabled)
+        {
+            using (var login = new LoginForm(settings))
+            {
+                if (login.ShowDialog() != System.Windows.Forms.DialogResult.OK) return;
+            }
+        }
+
+        Application.Run(new MainForm(store));
     }
 
     private static string GetSettingsPath(string[] args)

@@ -89,7 +89,13 @@ public sealed partial class MainForm : KryptonForm
 
     // ---------------------------------------------------------------- buttons
 
-    private void btnAbout_Click(object? sender, EventArgs e) => NotPortedYet("About");
+    private void btnAbout_Click(object? sender, EventArgs e)
+    {
+        using (var about = new AboutForm())
+        {
+            about.ShowDialog(this);
+        }
+    }
 
     private void btnSetting_Click(object? sender, EventArgs e) => OpenSettings();
 
@@ -221,10 +227,6 @@ public sealed partial class MainForm : KryptonForm
             MessageBoxButtons.YesNoCancel,
             MessageBoxIcon.Question,
             MessageBoxDefaultButton.Button3);
-
-    private void NotPortedYet(string what) =>
-        MessageBox.Show(this, "The " + what + " window is not ported to this version yet (issue #3).", Text,
-            MessageBoxButtons.OK, MessageBoxIcon.Information);
 
     // ---------------------------------------------------------------- saved folders
 

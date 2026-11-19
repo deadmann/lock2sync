@@ -38,9 +38,9 @@
   "more/less info" buttons, colour light, Path drop menu, Crimson status text). RULE: never redesign the look; port it 1:1,
   only fix real defects. Only changes: title without "V1 Premium", saved slots store the unlocked name (so the light stays
   green after locking), failure reasons in a tooltip.
-  #3 progress: Setting window (Skin + Security tabs), Confirm (Input) window, themes (all 7 map 1:1 to Krypton palettes) and
-  the background picture are done. Still to port: KryptonAbout (441x277, logo from KryptonAbout.resx) and the start-up Login
-  window (210x121 borderless; Cancel exits the app).
+  #3 DONE: Setting window (Skin + Security tabs), Password Confirm (Input), About (logo + description text in AboutForm.resx;
+  the old logo artwork says "1 Premium"), Login (asked in Program.Main before the main window exists; Exit ends the program),
+  themes (all 7 map 1:1 to Krypton palettes) and the background picture. All are designer forms.
   Why the 2008 picture failed on Win 11: it was copied to Directory.GetCurrentDirectory() (Program Files is read-only, and
   the folder moves after a file dialog) and loaded with new Bitmap(path) (locks the file). Now: copy to %AppData% via
   SkinImageStore, load via memory (SkinImageLoader), draw it as the main panel's own background (SkinRenderer), so a
