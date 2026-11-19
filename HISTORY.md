@@ -13,3 +13,4 @@ Dates come from the files themselves (compile timestamp inside the executable an
 | 1.1.0.0 Premium | 2010-06-04 (upload) | The only version whose source survives; its files date 2008-2010 |
 
 Public releases: https://sourceforge.net/projects/dirlock2sync/ (project registered 2010-05-17).
+Those releases were binaries only; this repository is the first publication of the source.
