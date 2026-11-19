@@ -22,6 +22,24 @@ public sealed class AppSettings
     /// <summary>Ask "lock this folder first?" before unloading a folder or closing the program.</summary>
     public bool SecurityQuestion { get; set; }
 
+    /// <summary>The info box of the main window lets the background picture show through.</summary>
+    public bool TransparentInfo { get; set; }
+
+    public SkinImageMode SkinImageMode { get; set; } = SkinImageMode.Tile;
+
+    /// <summary>File name of the saved background picture inside the app-data folder; empty when there is none.</summary>
+    public string SkinImageFile { get; set; } = string.Empty;
+
+    public AppTheme Theme { get; set; } = AppTheme.LightBlue;
+
+    /// <summary>Ask for a user name and password when the program starts.</summary>
+    public bool LoginEnabled { get; set; }
+
+    public string UserName { get; set; } = string.Empty;
+
+    /// <summary>The salted hash of the password (see <see cref="PasswordHasher"/>); never the password itself.</summary>
+    public string PasswordHash { get; set; } = string.Empty;
+
     /// <summary>The 10 saved folders. Use <see cref="GetSlot"/> / <see cref="SetSlot"/> in code; this property exists for saving.</summary>
     [XmlArray("PathSlots")]
     [XmlArrayItem("Path")]
@@ -54,6 +72,34 @@ public sealed class AppSettings
         CheckSlot(slot);
         _pathSlots[slot - 1] = string.Empty;
     }
+
+    /// <summary>Turns the start-up login on with this user name and password (the password is stored as a hash).</summary>
+    public void SetLogin(string userName, string password)
+    {
+        if (string.IsNullOrEmpty(userName)) throw new ArgumentException("The user name is empty.", nameof(userName));
+        if (string.IsNullOrEmpty(password)) throw new ArgumentException("The password is empty.", nameof(password));
+
+        UserName = userName;
+        PasswordHash = PasswordHasher.Hash(password);
+        LoginEnabled = true;
+    }
+
+    /// <summary>Turns the start-up login off and forgets the user name and password.</summary>
+    public void ClearLogin()
+    {
+        LoginEnabled = false;
+        UserName = string.Empty;
+        PasswordHash = string.Empty;
+    }
+
+    /// <summary>True when the login is on and the user name (any letter case) and password (exact) are right.</summary>
+    public bool CheckLogin(string userName, string password) =>
+        LoginEnabled
+        && string.Equals(UserName, userName, StringComparison.OrdinalIgnoreCase)
+        && PasswordHasher.Verify(password, PasswordHash);
+
+    /// <summary>True when this is the password that is stored now.</summary>
+    public bool PasswordMatches(string password) => PasswordHasher.Verify(password, PasswordHash);
 
     private static void CheckSlot(int slot)
     {
