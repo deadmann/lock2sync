@@ -10,7 +10,7 @@ namespace DirectoryLockToSync;
 /// SettingForm.Designer.cs (from the 2008 KryptonSetting designer). Choosing a theme previews it at once; Cancel (or
 /// closing the window) undoes the preview.
 /// </summary>
-public sealed partial class SettingForm : KryptonForm
+public sealed partial class SettingForm : ChromeForm
 {
     private readonly AppSettings _settings;
     private readonly SettingsStore _store;
@@ -36,12 +36,6 @@ public sealed partial class SettingForm : KryptonForm
         _skinStore = skinStore ?? throw new ArgumentNullException(nameof(skinStore));
 
         InitializeComponent();
-    }
-
-    protected override void OnHandleCreated(EventArgs e)
-    {
-        base.OnHandleCreated(e);
-        WindowCorners.Round(Handle);
     }
 
     // ---------------------------------------------------------------- showing the saved settings

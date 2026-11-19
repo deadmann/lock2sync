@@ -4,17 +4,11 @@ using Krypton.Toolkit;
 namespace DirectoryLockToSync;
 
 /// <summary>"Password Confirm" window: asks for the new password a second time. Layout: InputForm.Designer.cs.</summary>
-public sealed partial class InputForm : KryptonForm
+public sealed partial class InputForm : ChromeForm
 {
     public InputForm()
     {
         InitializeComponent();
-    }
-
-    protected override void OnHandleCreated(EventArgs e)
-    {
-        base.OnHandleCreated(e);
-        WindowCorners.Round(Handle);
     }
 
     /// <summary>What the user typed.</summary>

@@ -25,6 +25,10 @@
 - Base the designer on the ORIGINAL 2008 designer file (control names like btnLock, DrpBtnPath, groupBox1 are kept); each form
   has a public parameterless constructor so the designer can create it; the title style is the designer property
   `TitleStyle = Classic`, not a base class. About and Login (still to port in #3) must follow this too.
+- Window chrome (Classic title style, frame = panel surface via StateCommon.BackStyle, MaximizeBox off so the greyed maximize
+  button shows, Windows 11 round corners) lives in `ChromeForm` (code, NOT a designer file): all four Krypton windows inherit
+  from it. Reason: the designer rewrites *.Designer.cs and silently drops properties it does not serialize (it dropped the
+  hand-added BackStyle line and the frame "padding" came back). NEVER add such settings to a Designer.cs; put them in ChromeForm.
 - A designer form is verified by the real-window scripts in the session scratchpad, but the author's IDE is the final check.
 
 ## Facts about the original

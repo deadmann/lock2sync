@@ -12,7 +12,7 @@ namespace DirectoryLockToSync;
 /// KryptonDLTS designer, so it can be edited in the Visual Studio / Rider designer. This file has the behaviour only.
 /// All folder logic lives in <see cref="FolderSession"/> and <see cref="AppSettings"/> (tested in Core).
 /// </summary>
-public sealed partial class MainForm : KryptonForm
+public sealed partial class MainForm : ChromeForm
 {
     // Layout numbers of the original form, in 96-dpi pixels (used when the window grows with the address lines).
     private const int FormClientHeight = 208;
@@ -471,12 +471,6 @@ public sealed partial class MainForm : KryptonForm
         oldFrameImage?.Dispose();
         kryptonPanel.Invalidate();
         Invalidate();
-    }
-
-    protected override void OnHandleCreated(EventArgs e)
-    {
-        base.OnHandleCreated(e);
-        WindowCorners.Round(Handle);
     }
 
     protected override void OnResize(EventArgs e)
